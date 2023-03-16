@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+
+import numpy as np
+import sys, math
+
+# These are somce of the commons emission lines for QSOs.
+#emlines = print(np.array(["Ly-alpha 1216A (usually broad)",
+#                    "NV 1240A (usually broad, often blended with Lya)",
+#                    "SiIV/OIV 1400A (usually broad)",
+#                    "CIV 1549A (usually broad)",
+#                    "CIII 1909A (usually broad)",
+#                    "MgII 2800A (usually broad)",
+#                    "OII 3727A (usually narrow)",
+#                    "H-gamma 4340A ( usually broad, but weak)",
+#                    "H-beta 4861A (usually broad)",
+#                    "OIII 4959/5007 (usually narrow)",
+#                    "H-alpha 6563 (usually broad)",]))
+
+def die_with_usage(message):
+	print("\n****\n**** error: {}\n****\n".format(message), file=sys.stderr)
+	print("usage:\n\n    {} <operator> [arg1 [arg2 [...]]]\n".format(sys.argv[0]), file=sys.stderr)
+	print(", where <operator> can be one of:\n", file=sys.stderr)
+	for (op, func) in operators.items():
+		print("    {}: {}".format(op, func.__doc__), file=sys.stderr)
+	print("", file=sys.stderr)
+	exit(-1)
+
+
+# These are the emission line wavelengths commonly found in QSO. Wavelengths are in angstoms.
+emlines = np.array([6563,4959,4861,4340,3727,2800,1909,1549,1400,1240])
+
+def z(rest,obs):
+    z = (obs-rest)/rest
+    return z
+
+def locline(rat):
+    locline = emlines/rat
+    return locline
+
+def ratio(obs1,obs2):
+    ratio = obs1/obs2
+    return ratio
+
+
+operators = {
+	'z': z,
+	'locline': locline,
+	'ratio': ratio,
+    'emlines': emlines,
+}
+
+if __name__ == "__main__":
+	#
+	# Collect and parse arguments
+	#
+	try:
+		op = sys.argv[1]
+		args = [ float(arg) for arg in sys.argv[2:] ]
+	except IndexError:
+		die_with_usage("Insufficient number of arguments.")
+	except ValueError as e:
+		die_with_usage(e)
+
+	#
+	# Run the requested operation, and print the result
+	#
+	try:
+		print(operators[op](*args))
+	except KeyError:
+		die_with_usage("Unknown operator '{}'.".format(op))
+	except TypeError as e:
+		die_with_usage(e)
+	except ValueError as e:
+		die_with_usage(e)
+        
+
